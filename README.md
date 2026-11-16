@@ -23,12 +23,10 @@ Los datos solo salen del servidor después de iniciar sesión, así que aunque a
 2. Entra en vercel.com, pulsa **Add New → Project** e importa ese repositorio.
 3. En la configuración del proyecto deja **Framework Preset: Other**. No hace falta tocar nada más: `vercel.json` ya indica que la web está en `public/`.
 4. En **Settings → Environment Variables** añade:
-   - `APP_USER` = `villalba`
-   - `APP_PASS` = `123456` (o la contraseña que queráis)
+   - `APP_USER` = el usuario de acceso
+   - `APP_PASS` = la contraseña de acceso
    - `APP_SECRET` = una frase larga cualquiera (sirve para firmar la sesión; cámbiala y se cierran todas las sesiones)
 5. Pulsa **Deploy**. Si cambias las variables después, vuelve a desplegar para que se apliquen.
-
-Si no pones las variables, funciona igual con `villalba` / `123456`, pero es mejor ponerlas.
 
 ## Actualizar los datos después de cada jornada
 

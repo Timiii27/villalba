@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 :root{
   --bg:#EEF2EF; --surface:#FFFFFF; --surface-2:#F6F8F6; --ink:#14201A; --muted:#5D6B63; --line:#D7DED9;
@@ -163,6 +163,11 @@ dialog::backdrop{background:rgba(5,15,10,.55)}
 .cal-row.mine{background:color-mix(in srgb,var(--gold) 16%,transparent);border-radius:6px}
 .cal-row .f{color:var(--muted);font-size:13px}
 .note{font-size:12.5px;color:var(--muted);margin-top:8px}
+details.legend{margin-top:10px;font-size:13.5px}
+details.legend summary{cursor:pointer;font-weight:600;color:var(--pine-2)}
+details.legend dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:10px 0 0}
+details.legend dt{font-weight:700}
+details.legend dd{margin:0;color:var(--muted)}
 .cmp td.mid{text-align:center;color:var(--muted);font-weight:600}
 .cmp .better{font-weight:700;color:var(--good)}
 .toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:9px;font-weight:600;display:none;z-index:50}
@@ -444,14 +449,19 @@ function renderClasif(){
    {k:'drtg',label:'Defensa',fmt:r=>f1(r.drtg),title:'Puntos recibidos por 100 posesiones (menos es mejor)'},{k:'net',label:'Neto',fmt:r=>`<span class="${r.net>0?'pos':'neg'}">${sgn(r.net)}</span>`,title:'Diferencia por 100 posesiones'},
    {k:'last',label:'Últimos 5',nosort:1,fmt:r=>'<span class="wl">'+r.last.map(w=>`<i class="${w?'w':'d'}">${w?'V':'D'}</i>`).join('')+'</span>'}];
   document.getElementById('stTbl').append(sortableTable(cols,st,{rowCls:r=>r.t===ME?'me':'',onRow:i=>{curTeam=+i;setView('equipo')},rowId:r=>r.t}));
-  document.getElementById('stTbl').insertAdjacentHTML('beforeend','<div class="note">Puntos: 2 por victoria y 1 por derrota. Con empates a puntos, el orden de la FBM puede variar por enfrentamientos directos.</div>');
+  document.getElementById('stTbl').insertAdjacentHTML('beforeend','<div class="note">Puntos: 2 por victoria y 1 por derrota. Con empates a puntos, el orden de la FBM puede variar por enfrentamientos directos. Ritmo: posesiones por partido. Ataque y Defensa: puntos anotados y recibidos por cada 100 posesiones, para comparar equipos que juegan a ritmos distintos (en Defensa, menos es mejor). Neto: la diferencia. Pulsa un equipo para ver su ficha.</div>');
   const ff=TA.map(a=>({t:a.t,team:TS(a.t),efg:a.efg,tov:a.tov,orb:a.orb,ftr:a.ftr,oefg:a.oefg,otov:a.otov,drb:a.drb,oftr:a.oftr,p3:a.p3,ft:a.ft}));
   const rk=(k,asc)=>r=>{const v=ff.map(x=>x[k]);const n=1+v.filter(x=>asc?x<r[k]:x>r[k]).length;return `${pc1(r[k])}<span class="rk ${n<=3?'top':n>=10?'low':''}">${n}º</span>`};
   document.getElementById('ffTbl').append(sortableTable([{k:'team',label:'Equipo',l:1,fmt:r=>`<span class="team">${esc(r.team)}</span>`},
-    {k:'efg',label:'eFG%',fmt:rk('efg'),title:'Acierto efectivo en tiros de campo (el triple vale 1,5)'},{k:'tov',label:'Pérd.%',fmt:rk('tov',1),title:'Pérdidas por posesión'},
-    {k:'orb',label:'Reb.Of%',fmt:rk('orb'),title:'Rebotes ofensivos sobre los fallos propios'},{k:'ftr',label:'TL/T',fmt:rk('ftr'),title:'Tiros libres anotados por tiro de campo'},
-    {k:'oefg',label:'eFG% rival',fmt:rk('oefg',1)},{k:'otov',label:'Pérd.% rival',fmt:rk('otov')},{k:'drb',label:'Reb.Def%',fmt:rk('drb')},{k:'oftr',label:'TL/T rival',fmt:rk('oftr',1)},
+    {k:'efg',label:'Acierto',fmt:rk('efg'),title:'Acierto efectivo en tiros de campo (el triple vale 1,5)'},{k:'tov',label:'Pérdidas',fmt:rk('tov',1),title:'Pérdidas por posesión'},
+    {k:'orb',label:'Reb. of.',fmt:rk('orb'),title:'Rebotes ofensivos sobre los fallos propios'},{k:'ftr',label:'Libres',fmt:rk('ftr'),title:'Tiros libres anotados por tiro de campo'},
+    {k:'oefg',label:'Acierto rival',fmt:rk('oefg',1)},{k:'otov',label:'Pérdidas rival',fmt:rk('otov')},{k:'drb',label:'Reb. def.',fmt:rk('drb')},{k:'oftr',label:'Libres rival',fmt:rk('oftr',1)},
     {k:'p3',label:'%T3',fmt:rk('p3')},{k:'ft',label:'%TL',fmt:rk('ft')}],ff,{sortKey:'efg',rowCls:r=>r.t===ME?'me':'',onRow:i=>{curTeam=+i;setView('equipo')},rowId:r=>r.t}));
+  document.getElementById('ffTbl').insertAdjacentHTML('beforeend','<details class="legend"><summary>Qué significa cada columna</summary><dl>'+
+    [['Acierto','Acierto en tiros de campo contando el triple como tiro y medio (eFG%)'],['Pérdidas','Pérdidas por cada 100 posesiones'],['Reb. of.','Parte de sus propios fallos que recuperan en rebote ofensivo'],
+     ['Libres','Tiros libres anotados por cada tiro de campo'],['… rival','Lo mismo, pero lo que consigue el rival contra ellos: mide su defensa'],['Reb. def.','Parte de los fallos del rival que cogen en rebote defensivo'],
+     ['1º, 2º…','Puesto en la liga; en verde los 3 mejores y en rojo los 3 peores. En las columnas de rival y en pérdidas, ser 1º es conceder menos']]
+    .map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')+'</dl></details>');
 }
 let teamMode='all', rosterMode='basic';
 function renderTeam(){
@@ -461,12 +471,12 @@ function renderTeam(){
   <div class="board"><div><h2>${esc(TF(t))}</h2><div class="meta">${pos}º en la clasificación. ${A.pf} puntos a favor y ${A.pc} en contra.${ng?` Próximo: ${esc(TS(ng.h))} – ${esc(TS(ng.a))}, ${ng.fecha}.`:''}</div>
    <div class="board-actions"><button class="btn gold" id="pdfBtn" type="button">Descargar informe PDF</button>${t!==ME?`<button class="btn ghost" style="color:#fff;border-color:rgba(255,255,255,.35)" id="vsBtn" type="button">Comparar con Villalba</button>`:''}</div></div>
    <div class="rec">${A.w}-${A.l}<small>victorias-derrotas</small></div></div>
-  <div class="filters"><div><div class="sub" style="font-weight:600;font-size:12.5px;margin-bottom:3px">Partidos</div><span id="modeSeg"></span></div></div>
+  <div class="filters"><div><div class="sub" style="font-weight:600;font-size:12.5px;margin-bottom:3px">Mostrar datos de</div><span id="modeSeg"></span></div></div>
   <div class="tiles">
    ${tile(f1(A.ppg),'Puntos a favor',`${f1(A.oppg)} en contra`)}
    ${tile(f1(A.ortg),'Ataque',`por 100 posesiones, ${rank('ortg',t)}º`)}
    ${tile(f1(A.drtg),'Defensa',`recibidos por 100, ${rank('drtg',t,1)}º`)}
-   ${tile(sgn(A.net),'Neto',`${rank('net',t)}º de la liga`)}
+   ${tile(sgn(A.net),'Diferencia',`por 100 posesiones, ${rank('net',t)}º`)}
    ${tile(f1(A.pace),'Ritmo',`posesiones por partido`)}
    ${tile(pc(A.p3),'Triples',`${ma(A.S.t3m,A.S.t3a)}`)}
    ${tile(pc(A.ft),'Tiros libres',`${ma(A.S.tlm,A.S.tla)}`)}
@@ -475,10 +485,10 @@ function renderTeam(){
   <div class="grid2"><div class="panel"><h3>Cómo meterles mano</h3><ul class="keys">${K.weak.map(x=>`<li>${x}</li>`).join('')||'<li>No hay un punto débil claro respecto a la media de la liga.</li>'}</ul></div>
    <div class="panel"><h3>Lo que hay que respetar</h3><ul class="keys warn">${K.strong.map(x=>`<li>${x}</li>`).join('')||'<li>No destacan en ninguna estadística respecto a la media de la liga.</li>'}</ul></div></div>
   <div class="panel"><h3>Cuatro factores frente a la liga</h3><div id="ffTeam"></div></div>
-  <div class="panel"><h3>Plantilla</h3><div class="filters" id="rosterFilters"></div><div id="roster"></div><div class="note">Pulsa un jugador para ver su ficha. USG%: porcentaje de jugadas del equipo que acaba él cuando está en pista. TS%: acierto real contando triples y libres.</div></div>
+  <div class="panel"><h3>Plantilla</h3><div class="filters" id="rosterFilters"></div><div id="roster"></div><div class="note">Pulsa un jugador para ver su ficha completa. Pulsa una columna para ordenar.</div><div id="rosterLegend"></div></div>
   <div class="panel"><h3>Partidos</h3><div id="gameLog"></div></div>`;
   el.querySelectorAll('.team-pick button').forEach(b=>b.addEventListener('click',()=>{curTeam=+b.dataset.t;renderTeam();}));
-  document.getElementById('modeSeg').append(seg([['all','Todos'],['l3','Últimos 3'],['l5','Últimos 5'],['home','En casa'],['away','Fuera']],teamMode,v=>{teamMode=v;renderTeam();}));
+  document.getElementById('modeSeg').append(seg([['all','Toda la temporada'],['l3','Últimos 3'],['l5','Últimos 5'],['home','En casa'],['away','Fuera']],teamMode,v=>{teamMode=v;renderTeam();}));
   document.getElementById('pdfBtn').addEventListener('click',()=>makePDF(t));
   const vb=document.getElementById('vsBtn'); if(vb) vb.addEventListener('click',()=>{vsRival=t;setView('vs')});
   // four factors
@@ -491,7 +501,8 @@ function renderTeam(){
   // roster
   const rf=document.getElementById('rosterFilters'); rf.append(seg([['basic','Básicas'],['adv','Avanzadas'],['p36','Por 36 min']],rosterMode,v=>{rosterMode=v;drawRoster();}));
   function drawRoster(){const rows=players.filter(p=>p.t===t).map(p=>playerAgg(p,teamMode)).filter(a=>a.n>0).map(a=>Object.assign(a,{danger:PA[a.p.i].danger,role:PA[a.p.i].role}));
-    const box=document.getElementById('roster');box.innerHTML='';box.append(sortableTable(playerCols(rosterMode,false),rows,{sortKey:rosterMode==='adv'?'usg':'ppg',onRow:i=>openPlayer(+i),rowId:r=>r.p.i}));}
+    const box=document.getElementById('roster');box.innerHTML='';box.append(sortableTable(playerCols(rosterMode,false),rows,{sortKey:rosterMode==='adv'?'usg':rosterMode==='p36'?'p36':'ppg',onRow:i=>openPlayer(+i),rowId:r=>r.p.i}));
+    document.getElementById('rosterLegend').innerHTML=legendHTML(rosterMode);}
   drawRoster();
   // games
   const gl=A.gl.slice().reverse().map(g=>{const home=g.h===t,my=home?g.hp:g.ap,op=home?g.ap:g.hp;const top=players.filter(p=>p.t===t).map(p=>({p,r:p.rows.find(r=>r.g===g.i)})).filter(x=>x.r).sort((a,b)=>b.r.pts-a.r.pts)[0];
@@ -499,6 +510,19 @@ function renderTeam(){
   document.getElementById('gameLog').append(sortableTable([{k:'j',label:'J'},{k:'fecha',label:'Fecha',sortVal:r=>r.d},{k:'riv',label:'Rival',l:1},{k:'cf',label:'',l:1},{k:'res',label:'Resultado',sortVal:r=>r.dif,fmt:r=>`<b class="${r.w?'pos':'neg'}">${r.w?'V':'D'}</b> ${r.res}`},{k:'top',label:'Máximo anotador',l:1,nosort:1}],gl));
 }
 function tile(v,k,s){return `<div class="tile"><div class="k">${k}</div><div class="v tab-num">${v}</div><div class="s">${s||''}</div></div>`}
+const LEGEND={
+  basic:[['Nº','Dorsal'],['PJ','Partidos jugados'],['Min','Minutos por partido'],['Pts, Reb, As','Puntos, rebotes y asistencias por partido'],['RO','Rebotes ofensivos por partido'],
+    ['Rob, Pér','Robos y pérdidas por partido'],['%T2, %T3, %TL','Porcentaje en tiros de 2, triples y libres; al lado, anotados/intentados'],['FP, FR','Faltas cometidas y faltas recibidas por partido'],
+    ['Val','Valoración de la FBM por partido'],['Peligro','Valoración propia de 1 a 5: combina anotación, valoración, uso, acierto y +/-']],
+  adv:[['TS%','Acierto real: tiene en cuenta que el triple vale más y los tiros libres'],['eFG%','Acierto en tiros de campo contando el triple como tiro y medio'],
+    ['USG%','Parte de las jugadas del equipo que acaba él (tiro, libres o pérdida) cuando está en pista. Lo normal es un 20%'],['AST%','Parte de las canastas de sus compañeros que asiste él cuando está en pista'],
+    ['RO%, RD%','Parte de los rebotes ofensivos y defensivos disponibles que coge'],['ROB%','Parte de las posesiones del rival que acaban en un robo suyo'],['TAP%','Parte de los tiros de 2 del rival que tapona'],
+    ['PÉR%','Pérdidas por cada 100 jugadas suyas'],['T3/T','Parte de sus tiros de campo que son triples'],['+/-','Diferencia de puntos del equipo con él en pista, por partido'],
+    ['GmSc','Game Score: su partido resumido en un número. Un 10 es un buen partido']],
+  p36:[['/36','Sus números si jugara 36 minutos. Sirve para comparar titulares con suplentes; con pocos minutos puede engañar'],['+/- 40','Diferencia de puntos del equipo con él en pista por cada 40 minutos'],['Peligro','Valoración propia de 1 a 5']]
+};
+function legendHTML(mode){const L=LEGEND[mode]||LEGEND.basic;
+  return '<details class="legend"><summary>Qué significa cada columna</summary><dl>'+L.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')+'</dl></details>';}
 function playerCols(mode,withTeam){
   const base=[{k:'num',label:'Nº',sortVal:r=>+r.p.num||0,fmt:r=>`<span class="dorsal">${esc(r.p.num)}</span>`},{k:'name',label:'Jugador',l:1,sortVal:r=>r.p.name,fmt:r=>`<b>${esc(r.p.name)}</b><div class="sub" style="font-size:12px">${esc(r.role)}</div>`}];
   if(withTeam) base.push({k:'team',label:'Equipo',l:1,sortVal:r=>TS(r.p.t),fmt:r=>esc(TS(r.p.t))});
@@ -521,12 +545,12 @@ function renderPlayers(){
   el.innerHTML=`<div class="view-head"><div><h2>Jugadores de la liga</h2><div class="sub">Todos los jugadores con estadísticas. Filtra, ordena por cualquier columna y pulsa uno para ver su ficha.</div></div></div>
   <div class="panel"><div class="filters">
    <label>Equipo<select id="fTeam"><option value="all">Todos</option>${D.teams.map((x,i)=>`<option value="${i}">${esc(x[0])}</option>`).join('')}</select></label>
-   <label>Partidos<select id="fMode"><option value="all">Todos</option><option value="l3">Últimos 3 del equipo</option><option value="l5">Últimos 5 del equipo</option><option value="home">En casa</option><option value="away">Fuera</option></select></label>
-   <label>Mín. partidos<input id="fG" type="number" min="1" max="10" style="min-width:80px"></label>
-   <label>Mín. minutos<input id="fM" type="number" min="0" max="40" style="min-width:80px"></label>
-   <label>Buscar<input id="fQ" type="search" placeholder="Nombre o dorsal"></label>
+   <label>Datos de<select id="fMode"><option value="all">Toda la temporada</option><option value="l3">Últimos 3 del equipo</option><option value="l5">Últimos 5 del equipo</option><option value="home">En casa</option><option value="away">Fuera</option></select></label>
+   <label>Mín. partidos jugados<input id="fG" type="number" min="0" max="10" style="min-width:80px"></label>
+   <label>Mín. minutos por partido<input id="fM" type="number" min="0" max="40" style="min-width:80px"></label>
+   <label>Buscar<input id="fQ" type="search" placeholder="Nombre, dorsal o equipo"></label>
    <div><div class="sub" style="font-weight:600;font-size:12.5px;margin-bottom:3px">Vista</div><span id="fView"></span></div>
-  </div><div id="plTbl"></div><div class="note" id="plCount"></div></div>`;
+  </div><div id="plTbl"></div><div class="note" id="plCount"></div><div id="plLegend"></div></div>`;
   const $=id=>document.getElementById(id);
   $('fTeam').value=plF.team;$('fMode').value=plF.mode;$('fG').value=plF.minG;$('fM').value=plF.minM;$('fQ').value=plF.q;
   $('fView').append(seg([['basic','Básicas'],['adv','Avanzadas'],['p36','Por 36 min']],plF.view,v=>{plF.view=v;draw();}));
@@ -535,7 +559,8 @@ function renderPlayers(){
     const rows=players.filter(p=>plF.team==='all'||p.t===+plF.team).map(p=>Object.assign(playerAgg(p,plF.mode),{danger:PA[p.i].danger,role:PA[p.i].role}))
       .filter(a=>a.n>=(+plF.minG||0)&&a.min>=(+plF.minM||0)&&(!q||a.p.name.toLowerCase().includes(q)||a.p.num===q||TS(a.p.t).toLowerCase().includes(q)));
     const box=$('plTbl');box.innerHTML='';box.append(sortableTable(playerCols(plF.view,true),rows,{sortKey:plF.view==='adv'?'usg':plF.view==='p36'?'p36':'ppg',rowCls:r=>r.p.t===ME?'me':'',onRow:i=>openPlayer(+i),rowId:r=>r.p.i}));
-    $('plCount').textContent=`${rows.length} jugadores. Los filtros de mínimo evitan que se cuelen jugadores con muy pocos minutos.`;}
+    $('plCount').textContent=rows.length?`${rows.length} jugadores. Los mínimos de partidos y minutos evitan que se cuelen jugadores con muy poco juego; pon 0 para verlos a todos.`:'Ningún jugador cumple los filtros. Baja los mínimos de partidos o minutos, o cambia la búsqueda.';
+    $('plLegend').innerHTML=legendHTML(plF.view);}
   draw();
 }
 let vsRival=null;
