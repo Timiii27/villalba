@@ -7,14 +7,18 @@ Uso (desde la raíz del repositorio):
 
 - Mete los Excel nuevos en la carpeta excels/ (da igual el nombre; los repetidos se ignoran).
 - Si la FBM mueve un partido de fecha, cambia la fecha en data/calendario.csv.
+- Puesto y altura salen de data/plantillas.csv (sacado de la guía de la liga). Si ficha alguien nuevo,
+  añádelo ahí con su equipo tal y como sale en los Excel.
 """
-import glob, json, os, re, sys
+import glob, json, os, re, sys, unicodedata
 from datetime import date
+from difflib import SequenceMatcher
 from openpyxl import load_workbook
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXCELS = os.path.join(ROOT, "excels")
 CAL = os.path.join(ROOT, "data", "calendario.csv")
+PLANT = os.path.join(ROOT, "data", "plantillas.csv")
 OUT = os.path.join(ROOT, "data", "liga.json")
 MI_EQUIPO = "VILLALBA GILMAR"
 
@@ -54,6 +58,42 @@ def title(s):
     s = re.sub(r"\s+", " ", str(s).strip()).lower()
     words = ["-".join(p if p in LOW else p[:1].upper() + p[1:] for p in w.split("-")) for w in s.split(" ")]
     return re.sub(r",\s*", ", ", " ".join(words))
+
+
+def _toks(s):
+    s = "".join(c for c in unicodedata.normalize("NFD", str(s).lower()) if unicodedata.category(c) != "Mn")
+    return {w for w in re.findall(r"[a-z]+", s) if len(w) > 1 and w not in LOW}
+
+
+def _score(a, b):
+    """Palabras del nombre que coinciden (admite pequeñas erratas, p. ej. Tejeda/Tejada)."""
+    tb = _toks(b)
+    return sum(1 for x in _toks(a) if any(x == y or SequenceMatcher(None, x, y).ratio() >= 0.8 for y in tb))
+
+
+def load_plantillas():
+    """Devuelve {equipo: [(dorsal, nombre, altura, puesto), ...]} desde data/plantillas.csv."""
+    out = {}
+    if not os.path.exists(PLANT):
+        return out
+    with open(PLANT, encoding="utf-8") as fh:
+        next(fh)
+        for line in fh:
+            if line.strip():
+                eq, d, n, h, p = [x.strip() for x in line.strip().split(";")]
+                out.setdefault(eq, []).append((d, n, float(h.replace(",", ".")) if h else None, p))
+    return out
+
+
+def find_ficha(plant, team, name, dorsal):
+    best, bs = None, 0
+    for f in plant.get(team, []):
+        s = _score(name, f[1])
+        if s > bs or (s == bs and best and f[0] == dorsal and best[0] != dorsal):
+            best, bs = f, s
+    if best and (bs >= 2 or (bs >= 1 and best[0] == dorsal)):
+        return best
+    return None
 
 
 def parse_excel(path):
@@ -123,6 +163,20 @@ def main():
                 nidx[key] = len(names)
                 names.append([title(p["name"]), TID[p["team"]]])
             pg.append([gi, nidx[key], p["num"]] + [p[c] for c in COLS] + [p["pm"]])
+    # puesto y altura desde la guía (se emparejan por nombre; el dorsal ayuda a desempatar)
+    plant, sin_ficha = load_plantillas(), []
+    dors = {}
+    for r in pg:
+        dors.setdefault(r[1], {}).setdefault(r[2], 0)
+        dors[r[1]][r[2]] += 1
+    raw = {v: k for k, v in nidx.items()}
+    for i, n in enumerate(names):
+        team, rawname = raw[i]
+        dorsal = max(dors[i].items(), key=lambda x: x[1])[0]
+        f = find_ficha(plant, team, rawname, dorsal)
+        n += [f[3], f[2]] if f else ["", None]
+        if not f and plant:
+            sin_ficha.append(f"{SHORT[team]} {dorsal} {n[0]}")
     played = {(TEAMS[g[2]], TEAMS[g[3]]) for g in games}
     fut = [[j, TID[h], TID[a], f] for (h, a), (j, f) in cal.items() if (h, a) not in played]
     hoy = date.today()
@@ -136,6 +190,9 @@ def main():
     print(f"OK: {len(games)} partidos, {len(names)} jugadores, {len(fut)} partidos pendientes. Datos hasta el {last}.")
     for a in avisos:
         print("AVISO:", a)
+    if sin_ficha:
+        print(f"{len(sin_ficha)} jugadores sin puesto en data/plantillas.csv (la web lo estima por sus números):")
+        print("  " + ", ".join(sin_ficha))
     if pendientes_pasados:
         print("Partidos con fecha ya pasada sin Excel (¿aplazados o te falta el archivo?):")
         for p in pendientes_pasados:

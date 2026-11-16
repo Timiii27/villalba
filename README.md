@@ -11,6 +11,7 @@ api/data.js              Entrega los datos de la liga solo si hay sesión inicia
 api/logout.js            Cierra la sesión.
 data/liga.json           Datos de la liga (los genera el script). No se publica como archivo.
 data/calendario.csv      Las 22 jornadas con la fecha real de cada partido.
+data/plantillas.csv      Dorsal, nombre, altura y puesto de cada jugador (sacado de la guía de la liga).
 excels/                  Los Excel de cada partido descargados de la app Afición FBM.
 scripts/actualizar_datos.py   Convierte los Excel en data/liga.json.
 ```
@@ -32,6 +33,7 @@ Los datos solo salen del servidor después de iniciar sesión, así que aunque a
 
 1. Descarga en la app Afición FBM el Excel de cada partido nuevo y mételo en `excels/` (el nombre da igual; los repetidos se ignoran solos).
 2. Si la FBM ha cambiado la fecha de algún partido, corrígela en `data/calendario.csv`.
+   Si aparece un jugador nuevo, añádelo a `data/plantillas.csv` con su puesto (el script avisa de los que no encuentra; mientras tanto, la web estima su puesto por sus números).
 3. Ejecuta, desde la carpeta del repositorio:
    ```
    pip install -r scripts/requirements.txt
