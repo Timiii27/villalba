@@ -1,0 +1,7 @@
+{
+  "name": "scouting-villalba",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web de scouting de la Liga VIPS Masculina para Villalba Gilmar",
+  "engines": { "node": ">=18" }
+}
