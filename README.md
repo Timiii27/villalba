@@ -51,4 +51,7 @@ Con Node instalado: `npm i -g vercel` y luego `vercel dev` dentro de la carpeta.
 - Las claves de cada equipo y jugador ("Cómo meterles mano", "Lo que hay que respetar", peligrosidad) se calculan solas comparando con la media de la liga, así que se actualizan con cada jornada.
 - Algunos jugadores salen como "X NOMBRE" en los Excel: cuentan para los totales del equipo pero no aparecen en las tablas de jugadores.
 - Las estadísticas avanzadas siguen las fórmulas habituales: posesiones = tiros de campo − rebotes ofensivos + pérdidas + 0,44 × tiros libres; TS% = puntos / (2 × (tiros de campo + 0,44 × libres)); USG% = jugadas que acaba un jugador sobre las del equipo mientras está en pista.
+- **Nivel real**: diferencia de puntos por 100 posesiones descontando el nivel de los rivales que ha tenido cada equipo y si jugó en casa o fuera. De ahí sale el **pronóstico orientativo** de cada partido; con pocas jornadas es solo una referencia.
+- **Con él / sin él**: diferencia de puntos del equipo cada 40 minutos con un jugador en pista y cuando está sentado (sale del +/- de los Excel). Solo se muestra si ha jugado al menos 100 minutos y ha descansado al menos 60.
+- Para decidir quién es tirador o mal tirador de libres, los porcentajes con pocos tiros se acercan a la media de la liga, para no fiarse de una racha de dos partidos. El porcentaje que se enseña es siempre el real.
 # villalba
