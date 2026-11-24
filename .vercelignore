@@ -1,3 +1,5 @@
 # Solo se usan en local para generar data/liga.json; no hacen falta en Vercel
 scripts/
 excels/
+jugadas/
+data/jugadas/

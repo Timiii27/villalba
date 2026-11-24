@@ -42,6 +42,21 @@ Los datos solo salen del servidor después de iniciar sesión, así que aunque a
    El script dice cuántos partidos hay, hasta qué fecha llegan los datos y qué partidos con fecha ya pasada no tienen Excel (aplazados o archivos que faltan).
 4. Sube los cambios a GitHub (`git add . && git commit -m "Jornada X" && git push`). Vercel vuelve a publicar la web solo.
 
+## Jugada a jugada (cuartos, parciales, quintetos)
+
+El Excel no trae nada por cuartos. Para tenerlo, se lee el jugada a jugada de la app Afición FBM abierta en BlueStacks (Mac):
+
+1. Solo la primera vez: en BlueStacks, Ajustes → Avanzado → activa **Android Debug Bridge**. En la Terminal: `brew install android-platform-tools`.
+2. En la app, abre Villalba → PARTIDOS → Por jornadas y ejecuta:
+   ```
+   caffeinate -dims python3 -u scripts/capturar_todo.py
+   ```
+   Entra solo en cada partido jugado, lo captura, comprueba que cuadra con su Excel y pasa al siguiente (unos 7-8 minutos por partido). Se salta los que ya estén bien, así que cada semana solo hace los nuevos. Cierra los anuncios que salgan y funciona con la app en español o en inglés. Lo que hace queda en `jugadas/noche_log.txt`.
+   Para un solo partido: ábrelo en la pestaña EN VIVO y ejecuta `bash scripts/capturar_partido.sh`.
+3. Ejecuta `python3 scripts/actualizar_datos.py`. Dice cuántos partidos cuadran con su Excel y avisa de los que no.
+
+Las pantallas en bruto quedan en `jugadas/capturas/` (no se suben a GitHub) y el resultado en `data/jugadas/`. En la web aparece en el análisis de cada partido, en la pestaña Análisis de cada equipo, en la ficha de cada jugador y en las claves, solo para los partidos capturados.
+
 ## Probarla en tu ordenador (opcional)
 
 Con Node instalado: `npm i -g vercel` y luego `vercel dev` dentro de la carpeta. Abre http://localhost:3000.

@@ -4,3 +4,11 @@ node_modules/
 __pycache__/
 *.pyc
 .env
+# Pantallas en bruto de la app (pesan mucho; lo que se usa queda en data/jugadas/)
+jugadas/capturas/
+pantalla.xml
+jugadas/errores/
+jugadas/ultimo_log.txt
+/jugadas/
+/lista*.xml
+/mapa*.xml

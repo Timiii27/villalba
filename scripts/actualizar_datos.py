@@ -185,9 +185,17 @@ def main():
     last = max(games, key=lambda g: to_date(g[1]))[1] if games else hoy.strftime("%d/%m/%Y")
     data = dict(updated=last, teams=[[SHORT[t], FULL[t]] for t in TEAMS], me=TID[MI_EQUIPO], games=games,
                 tg=tg, players=names, pg=pg, fut=fut, cols=COLS)
+    # jugada a jugada (capturas de scripts/capturar_partido.sh), si las hay
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import jugadas
+    jugadas.main(liga=data)
+    pbp, pbp_ok = jugadas.load_for_web(data)
+    if pbp:
+        data["pbp"], data["pbp_ok"] = pbp, pbp_ok
     with open(OUT, "w", encoding="utf-8") as fh:
         json.dump(data, fh, ensure_ascii=False, separators=(",", ":"))
-    print(f"OK: {len(games)} partidos, {len(names)} jugadores, {len(fut)} partidos pendientes. Datos hasta el {last}.")
+    print(f"OK: {len(games)} partidos, {len(names)} jugadores, {len(fut)} partidos pendientes. Datos hasta el {last}."
+          + (f" Jugada a jugada de {len(pbp)} partidos." if pbp else ""))
     for a in avisos:
         print("AVISO:", a)
     if sin_ficha:
