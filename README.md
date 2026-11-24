@@ -1,6 +1,6 @@
 # Scouting Liga VIPS · Villalba Gilmar
 
-Web privada de scouting de la Liga VIPS Masculina (FBM, Grupo Impar) para el cuerpo técnico de Villalba Gilmar: clasificación con estadísticas avanzadas, ficha de cada equipo y jugador, comparativa Villalba vs rival, calendario e informes PDF descargables.
+Web privada de scouting de la Liga VIPS Masculina (FBM, Grupo Impar) para el cuerpo técnico de Villalba Gilmar: clasificación con estadísticas avanzadas, ficha de cada equipo y jugador, plan de partido contra cada rival, análisis de cada partido, calendario e informes PDF descargables.
 
 ## Cómo está hecha
 
